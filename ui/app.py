@@ -2,7 +2,7 @@
 import streamlit as st
 import requests
 import os
-from api.main import app  # optional local import; or call endpoints via requests
+
 API_BASE = "http://localhost:8000"
 
 st.title("AI Customer Support — Demo")
