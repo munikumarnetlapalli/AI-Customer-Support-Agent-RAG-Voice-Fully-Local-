@@ -1,20 +1,30 @@
 # tools/stt_whisper.py
 import tempfile
-import whisper
 import os
 
-model = whisper.load_model("tiny")  # local tiny model; downloads weights on first run
+_model = None
+
+def get_whisper_model():
+    global _model
+    if _model is None:
+        import whisper
+        _model = whisper.load_model("tiny")  # local tiny model
+    return _model
 
 def transcribe_audio_bytes(audio_bytes: bytes, format: str = "wav") -> str:
-    # write to temp file
     with tempfile.NamedTemporaryFile(suffix=f".{format}", delete=False) as tf:
         tf.write(audio_bytes)
         tf.flush()
         tmp_path = tf.name
-    result = model.transcribe(tmp_path)
-    text = result.get("text", "")
+    
     try:
-        os.remove(tmp_path)
-    except:
-        pass
+        model = get_whisper_model()
+        result = model.transcribe(tmp_path)
+        text = result.get("text", "")
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
     return text
